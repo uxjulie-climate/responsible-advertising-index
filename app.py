@@ -141,10 +141,31 @@ Starting at $55,000. Test drive today.
         "image_description": "Sleek electric SUV on open road with mountains in background. Modern, aspirational aesthetic. Family visible through windows. Clean, professional photography.",
         "expected_score": 65,
         "image_type": "ev"
+    },
+    "Magyar: Fenntartható Divat": {
+        "brand": "ÖkoFonál",
+        "copy": """Javítási Forradalom
+
+Minden ÖkoFonál ruhadarab élethosszig tartó javítási garanciával érkezik.
+Elromlott cipzár? Megjavítjuk. Elszakadt varrás? Megfoltozuk.
+
+2019 óta 14 000 darabot javítottunk meg, távol tartva őket a hulladéklerakóktól.
+
+Anyagunk: 100% organikus pamut, GOTS minősítéssel.
+Gyáraink: Fair Trade tanúsítvánnyal, átlátható ellátási lánccal.
+Ígéretünk: Vásárolj kevesebbet, viselj tovább.
+
+Látogass el javító kávézónkba minden szombaton 10:00-16:00 között.
+Hozz bármilyen ruhadarabot - akár a miénk, akár nem - ingyen segítünk megjavítani.
+
+#JavításiForradalom #ViseljTovább #LassúDivat""",
+        "image_description": "Diverse group of people of different ages, races, and body types sitting at a communal table repairing clothes together. Natural lighting, authentic documentary style. Tools and fabric visible. Community atmosphere.",
+        "expected_score": 90,
+        "image_type": "sustainable"
     }
 }
 
-# Scoring framework definition
+# Scoring framework definition (English and Hungarian)
 FRAMEWORK = {
     "Climate Responsibility": {
         "weight": 0.25,
@@ -153,6 +174,13 @@ FRAMEWORK = {
             "Absence of greenwashing or exaggerated claims",
             "Climate-positive products/behaviors shown",
             "Transparency in environmental framing"
+        ],
+        "hu_name": "Klímafelelősség",
+        "hu_indicators": [
+            "Fenntarthatósági üzenetek jelenléte és hitelessége",
+            "Zöldre festés és túlzó állítások hiánya",
+            "Klímapozitív termékek/viselkedések bemutatása",
+            "Átláthatóság a környezeti kommunikációban"
         ]
     },
     "Social Responsibility": {
@@ -162,6 +190,13 @@ FRAMEWORK = {
             "Avoidance of harmful stereotypes",
             "Empowering depiction of underrepresented groups",
             "Inclusive language and messaging"
+        ],
+        "hu_name": "Társadalmi Felelősség",
+        "hu_indicators": [
+            "Sokszínűség a megjelenítésben (nem, faj, kor, testalkat, képesség)",
+            "Káros sztereotípiák elkerülése",
+            "Alulreprezentált csoportok megerősítő ábrázolása",
+            "Befogadó nyelvezet és üzenet"
         ]
     },
     "Cultural Sensitivity": {
@@ -171,6 +206,13 @@ FRAMEWORK = {
             "Sensitivity to local norms and values",
             "Awareness of geopolitical contexts",
             "Balance between global and local resonance"
+        ],
+        "hu_name": "Kulturális Érzékenység",
+        "hu_indicators": [
+            "Kulturális szimbólumok és hagyományok tiszteletteljes használata",
+            "Érzékenység a helyi normák és értékek iránt",
+            "Geopolitikai kontextusok tudatossága",
+            "Egyensúly a globális és helyi rezonancia között"
         ]
     },
     "Ethical Communication": {
@@ -180,14 +222,136 @@ FRAMEWORK = {
             "Avoidance of manipulative techniques",
             "Truthful and verifiable claims",
             "Encouragement of informed choice over exploitation"
+        ],
+        "hu_name": "Etikus Kommunikáció",
+        "hu_indicators": [
+            "Átláthatóság a szándékban és közlésekben",
+            "Manipulatív technikák elkerülése",
+            "Igazolható és valós állítások",
+            "Tájékozott döntéshozatal ösztönzése a kizsákmányolás helyett"
         ]
     }
 }
 
-def create_analysis_prompt(ad_copy: str) -> str:
-    """Create the prompt for Gemini to analyze the ad"""
-    
-    prompt = f"""You are an expert in responsible advertising assessment. Analyze this advertisement across four key dimensions.
+# Language-specific UI text
+UI_TEXT = {
+    "en": {
+        "title": "Responsible Advertising Index",
+        "subtitle": "AI-Powered Assessment Tool Demo",
+        "api_key_label": "Google AI API Key",
+        "analyze_button": "🔍 Analyze Advertisement",
+        "results_header": "📊 Analysis Results",
+        "overall_score": "Overall Score",
+        "dimension_breakdown": "Dimension Breakdown",
+        "strengths": "✅ Strengths",
+        "concerns": "⚠️ Concerns",
+        "recommendations": "💡 Recommendations"
+    },
+    "hu": {
+        "title": "Felelős Reklámindex",
+        "subtitle": "AI-alapú Értékelő Eszköz Demó",
+        "api_key_label": "Google AI API Kulcs",
+        "analyze_button": "🔍 Reklám Elemzése",
+        "results_header": "📊 Elemzési Eredmények",
+        "overall_score": "Összpontszám",
+        "dimension_breakdown": "Dimenziók Részletezése",
+        "strengths": "✅ Erősségek",
+        "concerns": "⚠️ Aggályok",
+        "recommendations": "💡 Ajánlások"
+    }
+}
+
+def detect_language(text: str) -> str:
+    """Detect if the text is primarily Hungarian or English"""
+    # Simple detection based on common Hungarian characters and words
+    hungarian_chars = sum(1 for c in text if c in 'áéíóöőúüűÁÉÍÓÖŐÚÜŰ')
+    hungarian_words = ['és', 'hogy', 'van', 'nem', 'egy', 'az', 'ezt', 'csak', 'még', 'vagy']
+    hungarian_word_count = sum(1 for word in hungarian_words if word in text.lower())
+
+    if hungarian_chars > 5 or hungarian_word_count > 2:
+        return 'hu'
+    return 'en'
+
+def create_analysis_prompt(ad_copy: str, output_language: str = 'bilingual') -> str:
+    """Create the prompt for Gemini to analyze the ad with language support"""
+
+    # Detect the ad language
+    ad_language = detect_language(ad_copy)
+
+    if output_language == 'bilingual' or ad_language == 'hu':
+        # Bilingual prompt for Hungarian ads or when bilingual output is requested
+        prompt = f"""You are an expert in responsible advertising assessment. Analyze this advertisement across four key dimensions.
+
+IMPORTANT: This ad may be in Hungarian. Please provide your analysis in BOTH English and Hungarian for maximum accessibility.
+
+ADVERTISEMENT COPY:
+{ad_copy}
+
+FRAMEWORK / KERETRENDSZER:
+{json.dumps(FRAMEWORK, indent=2)}
+
+Please analyze this ad and provide:
+
+1. A score (0-100) for each of the four dimensions:
+   - Climate Responsibility / Klímafelelősség
+   - Social Responsibility / Társadalmi Felelősség
+   - Cultural Sensitivity / Kulturális Érzékenység
+   - Ethical Communication / Etikus Kommunikáció
+
+2. For each dimension, provide:
+   - The score
+   - 2-3 key findings in BOTH English and Hungarian (both strengths and risks)
+   - Specific examples from the ad
+
+3. An overall Responsibility Score (weighted average of the four dimensions)
+
+4. A summary with:
+   - Top 3 strengths (in both English and Hungarian)
+   - Top 3 areas of concern or risk (in both English and Hungarian)
+   - 2-3 recommendations for improvement (in both English and Hungarian)
+
+CRITICAL: For Hungarian ads, be sensitive to Hungarian cultural context, local norms, and language nuances.
+
+Please return your response in this EXACT JSON format (no markdown, just pure JSON):
+{{
+    "overall_score": <number 0-100>,
+    "ad_language": "{ad_language}",
+    "dimensions": {{
+        "Climate Responsibility": {{
+            "score": <number 0-100>,
+            "findings": ["finding 1 (EN)", "finding 2 (EN)", "finding 3 (EN)"],
+            "findings_hu": ["megállapítás 1 (HU)", "megállapítás 2 (HU)", "megállapítás 3 (HU)"]
+        }},
+        "Social Responsibility": {{
+            "score": <number 0-100>,
+            "findings": ["finding 1 (EN)", "finding 2 (EN)", "finding 3 (EN)"],
+            "findings_hu": ["megállapítás 1 (HU)", "megállapítás 2 (HU)", "megállapítás 3 (HU)"]
+        }},
+        "Cultural Sensitivity": {{
+            "score": <number 0-100>,
+            "findings": ["finding 1 (EN)", "finding 2 (EN)", "finding 3 (EN)"],
+            "findings_hu": ["megállapítás 1 (HU)", "megállapítás 2 (HU)", "megállapítás 3 (HU)"]
+        }},
+        "Ethical Communication": {{
+            "score": <number 0-100>,
+            "findings": ["finding 1 (EN)", "finding 2 (EN)", "finding 3 (EN)"],
+            "findings_hu": ["megállapítás 1 (HU)", "megállapítás 2 (HU)", "megállapítás 3 (HU)"]
+        }}
+    }},
+    "summary": {{
+        "strengths": ["strength 1 (EN)", "strength 2 (EN)", "strength 3 (EN)"],
+        "strengths_hu": ["erősség 1 (HU)", "erősség 2 (HU)", "erősség 3 (HU)"],
+        "concerns": ["concern 1 (EN)", "concern 2 (EN)", "concern 3 (EN)"],
+        "concerns_hu": ["aggály 1 (HU)", "aggály 2 (HU)", "aggály 3 (HU)"],
+        "recommendations": ["rec 1 (EN)", "rec 2 (EN)", "rec 3 (EN)"],
+        "recommendations_hu": ["ajánlás 1 (HU)", "ajánlás 2 (HU)", "ajánlás 3 (HU)"]
+    }}
+}}
+
+Be specific and reference actual elements from the ad copy and image. For Hungarian content, maintain cultural sensitivity and understanding of local context."""
+    else:
+        # English-only prompt for English ads
+        prompt = f"""You are an expert in responsible advertising assessment. Analyze this advertisement across four key dimensions.
 
 ADVERTISEMENT COPY:
 {ad_copy}
@@ -218,6 +382,7 @@ Please analyze this ad and provide:
 Please return your response in this EXACT JSON format (no markdown, just pure JSON):
 {{
     "overall_score": <number 0-100>,
+    "ad_language": "en",
     "dimensions": {{
         "Climate Responsibility": {{
             "score": <number 0-100>,
@@ -244,7 +409,7 @@ Please return your response in this EXACT JSON format (no markdown, just pure JS
 }}
 
 Be specific and reference actual elements from the ad copy and image."""
-    
+
     return prompt
 
 def analyze_ad(image_data: bytes, ad_copy: str, api_key: str) -> Dict:
@@ -787,16 +952,35 @@ def generate_comparison_pdf(analyses: List[Dict]) -> bytes:
 
 # Main app
 def main():
-    st.title("📊 Responsible Advertising Index")
-    st.markdown("### AI-Powered Assessment Tool Demo (Powered by Google Gemini)")
+    # Initialize language preference in session state
+    if 'display_language' not in st.session_state:
+        st.session_state.display_language = 'en'
+
+    # Display title based on language preference
+    if st.session_state.display_language == 'hu':
+        st.title("📊 Felelős Reklámindex")
+        st.markdown("### AI-alapú Értékelő Eszköz Demó (Google Gemini)")
+    else:
+        st.title("📊 Responsible Advertising Index")
+        st.markdown("### AI-Powered Assessment Tool Demo (Google Gemini)")
+
     st.markdown("---")
-    
+
     # Sidebar for API key and info
     with st.sidebar:
-        st.header("⚙️ Configuration")
-        api_key = st.text_input("Google AI API Key", type="password", 
+        st.header("⚙️ Configuration / Konfiguráció")
+
+        # Language selector
+        display_lang = st.selectbox(
+            "Interface Language / Felület Nyelve",
+            options=['en', 'hu'],
+            format_func=lambda x: "English 🇬🇧" if x == 'en' else "Magyar 🇭🇺",
+            key='display_language'
+        )
+
+        api_key = st.text_input("Google AI API Key", type="password",
                                 help="Get your free API key at https://aistudio.google.com/app/apikey")
-        
+
         st.markdown("---")
         st.markdown("""
         **💡 Getting Your API Key:**
@@ -825,17 +1009,29 @@ def main():
                 st.markdown(f"{emoji} {analysis['brand_name']} ({score})")
         
         st.markdown("---")
-        st.header("📖 About")
-        st.markdown("""
-        This tool evaluates advertisements across four dimensions:
-        
-        1. **Climate Responsibility** - Sustainability messaging and claims
-        2. **Social Responsibility** - Diversity and inclusion
-        3. **Cultural Sensitivity** - Respectful representation
-        4. **Ethical Communication** - Transparency and truthfulness
-        
-        Upload an ad image and provide the copy to get a comprehensive responsibility assessment.
-        """)
+        st.header("📖 About / Rólunk")
+        if st.session_state.display_language == 'hu':
+            st.markdown("""
+            Ez az eszköz négy dimenzió mentén értékeli a reklámokat:
+
+            1. **Klímafelelősség** - Fenntarthatósági üzenetek és állítások
+            2. **Társadalmi Felelősség** - Sokszínűség és befogadás
+            3. **Kulturális Érzékenység** - Tiszteletteljes megjelenítés
+            4. **Etikus Kommunikáció** - Átláthatóság és őszinteség
+
+            Töltsön fel egy reklámképet és adja meg a szöveget egy átfogó felelősségi értékeléshez.
+            """)
+        else:
+            st.markdown("""
+            This tool evaluates advertisements across four dimensions:
+
+            1. **Climate Responsibility** - Sustainability messaging and claims
+            2. **Social Responsibility** - Diversity and inclusion
+            3. **Cultural Sensitivity** - Respectful representation
+            4. **Ethical Communication** - Transparency and truthfulness
+
+            Upload an ad image and provide the copy to get a comprehensive responsibility assessment.
+            """)
         
         st.markdown("---")
         st.header("🎯 Framework")
@@ -1004,28 +1200,86 @@ def main():
                             st.error("⭐⭐⭐")
                     
                     with col2:
-                        st.markdown("### Key Findings:")
-                        for finding in data['findings']:
-                            st.markdown(f"• {finding}")
-            
+                        # Check if bilingual findings exist
+                        has_hungarian = 'findings_hu' in data
+
+                        if has_hungarian and st.session_state.display_language == 'hu':
+                            st.markdown("### Főbb Megállapítások:")
+                            for finding in data['findings_hu']:
+                                st.markdown(f"• {finding}")
+                            with st.expander("Show English / Angol verzió"):
+                                for finding in data['findings']:
+                                    st.markdown(f"• {finding}")
+                        elif has_hungarian:
+                            st.markdown("### Key Findings:")
+                            for finding in data['findings']:
+                                st.markdown(f"• {finding}")
+                            with st.expander("Show Hungarian / Magyar verzió"):
+                                for finding in data['findings_hu']:
+                                    st.markdown(f"• {finding}")
+                        else:
+                            st.markdown("### Key Findings:")
+                            for finding in data['findings']:
+                                st.markdown(f"• {finding}")
+
             # Summary tab with better visualization
             with tabs[-1]:
                 col1, col2, col3 = st.columns(3)
-                
+
+                # Check if bilingual summary exists
+                has_hungarian_summary = 'strengths_hu' in result['summary']
+                display_lang = st.session_state.display_language
+
                 with col1:
-                    st.markdown("### ✅ Strengths")
-                    for i, strength in enumerate(result['summary']['strengths'], 1):
-                        st.success(f"{i}. {strength}")
-                
+                    if display_lang == 'hu' and has_hungarian_summary:
+                        st.markdown("### ✅ Erősségek")
+                        for i, strength in enumerate(result['summary']['strengths_hu'], 1):
+                            st.success(f"{i}. {strength}")
+                        with st.expander("English"):
+                            for i, strength in enumerate(result['summary']['strengths'], 1):
+                                st.markdown(f"{i}. {strength}")
+                    else:
+                        st.markdown("### ✅ Strengths")
+                        for i, strength in enumerate(result['summary']['strengths'], 1):
+                            st.success(f"{i}. {strength}")
+                        if has_hungarian_summary:
+                            with st.expander("Magyar"):
+                                for i, strength in enumerate(result['summary']['strengths_hu'], 1):
+                                    st.markdown(f"{i}. {strength}")
+
                 with col2:
-                    st.markdown("### ⚠️ Concerns")
-                    for i, concern in enumerate(result['summary']['concerns'], 1):
-                        st.warning(f"{i}. {concern}")
-                
+                    if display_lang == 'hu' and has_hungarian_summary:
+                        st.markdown("### ⚠️ Aggályok")
+                        for i, concern in enumerate(result['summary']['concerns_hu'], 1):
+                            st.warning(f"{i}. {concern}")
+                        with st.expander("English"):
+                            for i, concern in enumerate(result['summary']['concerns'], 1):
+                                st.markdown(f"{i}. {concern}")
+                    else:
+                        st.markdown("### ⚠️ Concerns")
+                        for i, concern in enumerate(result['summary']['concerns'], 1):
+                            st.warning(f"{i}. {concern}")
+                        if has_hungarian_summary:
+                            with st.expander("Magyar"):
+                                for i, concern in enumerate(result['summary']['concerns_hu'], 1):
+                                    st.markdown(f"{i}. {concern}")
+
                 with col3:
-                    st.markdown("### 💡 Recommendations")
-                    for i, rec in enumerate(result['summary']['recommendations'], 1):
-                        st.info(f"{i}. {rec}")
+                    if display_lang == 'hu' and has_hungarian_summary:
+                        st.markdown("### 💡 Ajánlások")
+                        for i, rec in enumerate(result['summary']['recommendations_hu'], 1):
+                            st.info(f"{i}. {rec}")
+                        with st.expander("English"):
+                            for i, rec in enumerate(result['summary']['recommendations'], 1):
+                                st.markdown(f"{i}. {rec}")
+                    else:
+                        st.markdown("### 💡 Recommendations")
+                        for i, rec in enumerate(result['summary']['recommendations'], 1):
+                            st.info(f"{i}. {rec}")
+                        if has_hungarian_summary:
+                            with st.expander("Magyar"):
+                                for i, rec in enumerate(result['summary']['recommendations_hu'], 1):
+                                    st.markdown(f"{i}. {rec}")
             
             st.markdown("---")
             

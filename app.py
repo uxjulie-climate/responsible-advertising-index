@@ -1044,7 +1044,7 @@ def main():
     
     # Main content
     # NEW: Add tab navigation for single vs comparison analysis
-    main_tab, comparison_tab, export_tab = st.tabs(["📤 Single Analysis", "🔄 Compare Ads", "📊 Export Data"])
+    main_tab, video_tab, comparison_tab, export_tab = st.tabs(["📤 Image Analysis", "📹 Video Analysis", "🔄 Compare Ads", "📊 Export Data"])
     
     # ============ TAB 1: SINGLE ANALYSIS ============
     with main_tab:
@@ -1315,8 +1315,256 @@ def main():
                 if st.button("📋 Copy Results", use_container_width=True):
                     st.code(json_str, language="json")
                     st.success("✅ Results displayed above - copy as needed")
-    
-    # ============ TAB 2: COMPARISON ============
+
+    # ============ TAB 2: VIDEO ANALYSIS ============
+    with video_tab:
+        st.header("📹 Video Advertisement Analysis")
+
+        st.info("""
+        📋 **Supported Formats:** MP4, MOV, AVI, WebM
+        ⏱️ **Duration:** Up to 3 minutes recommended
+        📦 **File Size:** Max 200MB
+        🌍 **Languages:** English, Hungarian
+        💰 **Cost:** ~$0.01-0.02 per video
+        """)
+
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            uploaded_video = st.file_uploader(
+                "Upload video advertisement",
+                type=['mp4', 'mov', 'avi', 'webm'],
+                help="Maximum 200MB, 3 minutes duration"
+            )
+
+            if uploaded_video:
+                st.video(uploaded_video)
+
+                # Show video metadata
+                try:
+                    from video_utils import get_video_metadata, format_duration, estimate_cost
+
+                    video_bytes = uploaded_video.read()
+                    uploaded_video.seek(0)  # Reset for later use
+
+                    metadata = get_video_metadata(video_bytes)
+
+                    col_a, col_b, col_c = st.columns(3)
+                    col_a.metric("File Size", f"{metadata['size_mb']:.1f} MB")
+                    col_b.metric("Duration", format_duration(metadata['duration']))
+                    col_c.metric("Est. Cost", f"${estimate_cost(metadata['duration']):.3f}")
+
+                    st.caption(f"Resolution: {metadata['width']}x{metadata['height']} | FPS: {metadata['fps']:.1f} | Codec: {metadata['codec']}")
+
+                except Exception as e:
+                    st.warning(f"Could not read video metadata: {e}")
+
+        with col2:
+            brand_name_video = st.text_input(
+                "Brand Name (Video)",
+                placeholder="e.g., Telekom, Nike..."
+            )
+
+            ad_copy_video = st.text_area(
+                "Additional Context (Optional)",
+                placeholder="Any text from the ad, script, or additional context...",
+                height=200,
+                help="Optional: Provide any text, script, or context about the video"
+            )
+
+            st.markdown("---")
+
+            analyze_button_video = st.button(
+                "🎬 Analyze Video",
+                type="primary",
+                use_container_width=True,
+                disabled=not uploaded_video or not api_key
+            )
+
+        # Analysis section
+        if analyze_button_video and uploaded_video and api_key:
+            from video_processor import VideoAnalyzer
+            from video_utils import validate_video
+
+            # Read video
+            video_bytes = uploaded_video.read()
+
+            # Validate video
+            with st.spinner("Validating video..."):
+                is_valid, message, metadata = validate_video(video_bytes)
+
+            if not is_valid:
+                st.error(f"❌ Video validation failed: {message}")
+            else:
+                st.success(f"✅ Video validation passed: {message}")
+
+                # Detect language from ad copy
+                detected_lang = detect_language(ad_copy_video) if ad_copy_video else 'en'
+
+                # Analyze video
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+
+                try:
+                    status_text.text("⬆️ Uploading video to Google's servers...")
+                    progress_bar.progress(20)
+
+                    analyzer = VideoAnalyzer(api_key=api_key)
+
+                    status_text.text("🤖 Analyzing video with Gemini AI...")
+                    progress_bar.progress(40)
+
+                    result = analyzer.analyze_video(
+                        video_bytes=video_bytes,
+                        ad_copy=ad_copy_video,
+                        detected_language=detected_lang
+                    )
+
+                    progress_bar.progress(100)
+                    status_text.success("✅ Analysis complete!")
+
+                    # Store in history
+                    st.session_state.analysis_history.append({
+                        'timestamp': datetime.now(),
+                        'brand': brand_name_video or "Unknown",
+                        'type': 'video',
+                        'duration': metadata['duration'] if metadata else 0,
+                        'result': result
+                    })
+
+                    # Display results
+                    st.markdown("---")
+                    st.subheader("📊 Analysis Results")
+
+                    # Overall score with gauge
+                    col1, col2 = st.columns([1, 2])
+
+                    with col1:
+                        st.metric("Overall Score", f"{result.get('overall_score', 0)}/100")
+                        st.caption(f"Duration: {result.get('duration_analyzed', 'N/A')}")
+                        st.caption(f"Language: {result.get('detected_language', 'N/A').upper()}")
+
+                    with col2:
+                        # Create gauge chart
+                        fig_gauge = create_gauge_chart(result.get('overall_score', 0))
+                        st.plotly_chart(fig_gauge, use_container_width=True)
+
+                    # Radar chart
+                    st.subheader("📈 Dimension Scores")
+                    dimension_scores = {
+                        dim: data.get('score', 0)
+                        for dim, data in result.get('dimensions', {}).items()
+                    }
+                    fig_radar = create_radar_chart(dimension_scores, brand_name_video or "Video Ad")
+                    st.plotly_chart(fig_radar, use_container_width=True)
+
+                    # Video transcript
+                    if 'transcript' in result and result['transcript']:
+                        with st.expander("📝 Video Transcript"):
+                            st.text(result['transcript'])
+
+                    # Temporal analysis
+                    if 'temporal_analysis' in result:
+                        st.subheader("⏱️ Temporal Analysis")
+                        temporal = result['temporal_analysis']
+
+                        if 'messaging_evolution' in temporal:
+                            st.markdown(f"**Message Evolution:** {temporal['messaging_evolution']}")
+
+                        if 'key_moments' in temporal and temporal['key_moments']:
+                            st.markdown("**Key Moments:**")
+                            for moment in temporal['key_moments']:
+                                st.markdown(f"- **{moment.get('timestamp', 'N/A')}**: {moment.get('event', 'N/A')}")
+
+                        if 'audio_visual_alignment' in temporal:
+                            alignment = temporal['audio_visual_alignment']
+                            if alignment == 'consistent':
+                                st.success(f"✅ Audio-Visual Alignment: {alignment}")
+                            else:
+                                st.warning(f"⚠️ Audio-Visual Alignment: {alignment}")
+
+                    # Scene breakdown
+                    if 'scenes' in result and result['scenes']:
+                        st.subheader("🎬 Scene-by-Scene Breakdown")
+                        for idx, scene in enumerate(result['scenes']):
+                            with st.expander(f"Scene {idx+1}: {scene.get('timestamp', 'N/A')}"):
+                                st.markdown(f"**Description:** {scene.get('description', 'N/A')}")
+
+                                if 'visual_elements' in scene:
+                                    st.markdown("**Visual Elements:**")
+                                    for elem in scene['visual_elements']:
+                                        st.markdown(f"- {elem}")
+
+                                if 'audio_content' in scene:
+                                    st.markdown(f"**Audio:** {scene['audio_content']}")
+
+                                # Scene scores
+                                scene_cols = st.columns(4)
+                                scene_cols[0].metric("Climate", f"{scene.get('climate_score', 0)}")
+                                scene_cols[1].metric("Social", f"{scene.get('social_score', 0)}")
+                                scene_cols[2].metric("Cultural", f"{scene.get('cultural_score', 0)}")
+                                scene_cols[3].metric("Ethical", f"{scene.get('ethical_score', 0)}")
+
+                    # Detailed findings per dimension
+                    st.subheader("🔍 Detailed Findings")
+
+                    # Determine which language to show first
+                    show_language = ui_language  # Use interface language setting
+
+                    for dim_name, dim_data in result.get('dimensions', {}).items():
+                        with st.expander(f"{dim_name}: {dim_data.get('score', 0)}/100"):
+                            # Show findings in primary language
+                            findings_key = 'findings_hu' if show_language == 'hu' and 'findings_hu' in dim_data else 'findings'
+                            findings = dim_data.get(findings_key, [])
+
+                            for finding in findings:
+                                st.markdown(f"- {finding}")
+
+                            # Option to toggle language
+                            if 'findings_hu' in dim_data and 'findings' in dim_data:
+                                alt_lang = 'en' if show_language == 'hu' else 'hu'
+                                alt_findings_key = 'findings' if show_language == 'hu' else 'findings_hu'
+                                alt_findings = dim_data.get(alt_findings_key, [])
+
+                                lang_label = "Show in English" if show_language == 'hu' else "Mutasd magyarul"
+                                if st.checkbox(lang_label, key=f"lang_toggle_video_{dim_name}"):
+                                    st.markdown(f"**{dim_name} ({'English' if alt_lang == 'en' else 'Magyar'}):**")
+                                    for finding in alt_findings:
+                                        st.markdown(f"- {finding}")
+
+                    # Summary
+                    if 'summary' in result:
+                        st.subheader("📝 Summary")
+                        summary = result['summary']
+
+                        # Determine summary language
+                        strengths_key = 'strengths_hu' if show_language == 'hu' and 'strengths_hu' in summary else 'strengths'
+                        concerns_key = 'concerns_hu' if show_language == 'hu' and 'concerns_hu' in summary else 'concerns'
+                        recs_key = 'recommendations_hu' if show_language == 'hu' and 'recommendations_hu' in summary else 'recommendations'
+
+                        col1, col2, col3 = st.columns(3)
+
+                        with col1:
+                            st.markdown("**✅ Strengths:**")
+                            for strength in summary.get(strengths_key, []):
+                                st.markdown(f"- {strength}")
+
+                        with col2:
+                            st.markdown("**⚠️ Concerns:**")
+                            for concern in summary.get(concerns_key, []):
+                                st.markdown(f"- {concern}")
+
+                        with col3:
+                            st.markdown("**💡 Recommendations:**")
+                            for rec in summary.get(recs_key, []):
+                                st.markdown(f"- {rec}")
+
+                except Exception as e:
+                    progress_bar.progress(0)
+                    status_text.error(f"❌ Analysis failed: {str(e)}")
+                    st.exception(e)
+
+    # ============ TAB 3: COMPARISON ============
     with comparison_tab:
         st.header("🔄 Compare Multiple Advertisements")
         

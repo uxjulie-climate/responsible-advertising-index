@@ -978,7 +978,25 @@ def main():
             key='display_language'
         )
 
-        api_key = st.text_input("Google AI API Key", type="password",
+        # Try to load API key from .env file
+        import os
+        from pathlib import Path
+
+        default_api_key = ""
+        env_file = Path(__file__).parent / ".env"
+        if env_file.exists():
+            try:
+                with open(env_file) as f:
+                    for line in f:
+                        if line.startswith("GOOGLE_API_KEY="):
+                            default_api_key = line.split("=", 1)[1].strip()
+                            break
+            except:
+                pass
+
+        api_key = st.text_input("Google AI API Key",
+                                value=default_api_key,
+                                type="password",
                                 help="Get your free API key at https://aistudio.google.com/app/apikey")
 
         st.markdown("---")
@@ -1052,8 +1070,11 @@ def main():
         
         # Example ads section
         st.subheader("🎨 Try an Example Ad")
-        cols = st.columns(3)
-        
+
+        # Create columns based on number of example ads
+        num_examples = len(EXAMPLE_ADS)
+        cols = st.columns(num_examples)
+
         for idx, (example_name, example_data) in enumerate(EXAMPLE_ADS.items()):
             with cols[idx]:
                 if st.button(example_name, key=f"example_{idx}", use_container_width=True):

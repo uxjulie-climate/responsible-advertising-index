@@ -39,5 +39,13 @@ echo "Press Ctrl+C to stop the server"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Run Streamlit
-streamlit run app.py
+# Run Streamlit - try multiple possible locations
+if command -v streamlit &> /dev/null; then
+    streamlit run app.py
+elif command -v python3 &> /dev/null; then
+    python3 -m streamlit run app.py
+else
+    echo "❌ Could not find streamlit or python3"
+    echo "Please run: pip3 install -r requirements.txt"
+    exit 1
+fi

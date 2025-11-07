@@ -18,7 +18,7 @@ class VideoConfig:
     # Gemini model settings
     model_name: str = "gemini-2.5-flash"
     temperature: float = 0.4
-    max_output_tokens: int = 4000
+    max_output_tokens: int = 8000  # Increased for video analysis
 
     # File API threshold (videos larger than this use File API)
     file_api_threshold_mb: int = 20

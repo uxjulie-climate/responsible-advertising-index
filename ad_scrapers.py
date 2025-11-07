@@ -107,20 +107,49 @@ class YouTubeScraper(AdScraper):
             True if successful
         """
         try:
-            # Check if yt-dlp is installed
-            result = subprocess.run(['yt-dlp', '--version'], capture_output=True)
-            if result.returncode != 0:
-                print("❌ yt-dlp not installed. Install with: pip install yt-dlp")
+            # Try multiple paths for yt-dlp
+            yt_dlp_paths = [
+                'yt-dlp',
+                '/Users/julieschiller/Library/Python/3.9/bin/yt-dlp',
+                'python3 -m yt_dlp'
+            ]
+
+            yt_dlp_cmd = None
+            for cmd_path in yt_dlp_paths:
+                try:
+                    if cmd_path.startswith('python3'):
+                        test_cmd = ['python3', '-m', 'yt_dlp', '--version']
+                    else:
+                        test_cmd = [cmd_path, '--version']
+
+                    result = subprocess.run(test_cmd, capture_output=True)
+                    if result.returncode == 0:
+                        yt_dlp_cmd = cmd_path
+                        break
+                except:
+                    continue
+
+            if not yt_dlp_cmd:
+                print("❌ yt-dlp not found. Install with: pip3 install yt-dlp")
                 return False
 
             # Download video (max 720p, mp4 format)
-            cmd = [
-                'yt-dlp',
-                url,
-                '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
-                '-o', output_path,
-                '--no-playlist'
-            ]
+            if yt_dlp_cmd.startswith('python3'):
+                cmd = [
+                    'python3', '-m', 'yt_dlp',
+                    url,
+                    '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
+                    '-o', output_path,
+                    '--no-playlist'
+                ]
+            else:
+                cmd = [
+                    yt_dlp_cmd,
+                    url,
+                    '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
+                    '-o', output_path,
+                    '--no-playlist'
+                ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode == 0:
@@ -130,9 +159,6 @@ class YouTubeScraper(AdScraper):
                 print(f"❌ Download failed: {result.stderr}")
                 return False
 
-        except FileNotFoundError:
-            print("❌ yt-dlp not found. Install with: pip install yt-dlp")
-            return False
         except Exception as e:
             print(f"❌ Error: {e}")
             return False

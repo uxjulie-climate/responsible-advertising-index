@@ -27,6 +27,25 @@ def main():
         show_search_guide()
         return
 
+    # Check for placeholder URL
+    if 'VIDEO_ID' in url or 'XXXXXXXXX' in url or url.endswith('...'):
+        print()
+        print("❌ ERROR: You used a placeholder URL!")
+        print()
+        print("You entered:", url)
+        print()
+        print("That's just an EXAMPLE - you need to use a REAL YouTube URL.")
+        print()
+        print("📺 Try this real example:")
+        print('   python3 download_ads.py "https://www.youtube.com/watch?v=cbP2N1BQdYc"')
+        print()
+        print("Or search YouTube for an ad and copy the REAL URL from your browser.")
+        print()
+        print("Need help finding ads? Run:")
+        print("   python3 download_ads.py search")
+        print()
+        return
+
     # Detect platform
     platform = detect_platform(url)
 
@@ -163,16 +182,23 @@ def show_linkedin_instructions(url: str, output_path: Path):
 
     print("4️⃣  GO TO 'NETWORK' TAB:")
     print("   • Click on 'Network' in the DevTools")
-    print("   • Type 'mp4' in the filter box")
+    print("   • Clear existing requests (🚫 icon)")
     print()
 
     print("5️⃣  PLAY THE VIDEO:")
     print("   • Click play on the ad video")
-    print("   • Watch the Network tab")
+    print("   • Watch the Network tab for new requests")
     print()
 
-    print("6️⃣  FIND THE VIDEO URL:")
-    print("   • Look for a request ending in .mp4")
+    print("6️⃣  FIND THE VIDEO FILE:")
+    print("   • Look for large files (>1MB)")
+    print("   • Filter by: 'mp4' OR 'video' OR 'm3u8' OR 'ts'")
+    print("   • Common patterns:")
+    print("     - *.mp4 (most common)")
+    print("     - *.mov")
+    print("     - *.m3u8 (streaming format)")
+    print("     - blob: URLs")
+    print("   • Sort by 'Size' column (largest files)")
     print("   • Right-click on it → 'Copy' → 'Copy URL'")
     print()
 

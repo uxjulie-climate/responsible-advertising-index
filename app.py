@@ -433,7 +433,7 @@ def analyze_ad(image_data: bytes, ad_copy: str, api_key: str) -> Dict:
             [prompt, img],
             generation_config=genai.types.GenerationConfig(
                 temperature=0.4,
-                max_output_tokens=4000,
+                max_output_tokens=8000,  # Increased for bilingual detailed output
             )
         )
         

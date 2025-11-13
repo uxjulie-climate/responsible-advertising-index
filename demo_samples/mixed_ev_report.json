@@ -1,0 +1,78 @@
+{
+  "brand": "DriveForward Motors",
+  "ad_type": "Electric Vehicle SUV",
+  "analysis_date": "2025-01-10",
+  "overall_score": 68,
+  "ad_language": "en",
+  "dimensions": {
+    "Climate Responsibility": {
+      "score": 72,
+      "findings": [
+        "Promotes electric vehicle technology as climate solution: 'The future is electric'",
+        "Specific performance claims: '300 Mile Range' provides concrete information",
+        "However, promotes SUV format - larger vehicle with higher resource/energy consumption",
+        "No mention of battery sourcing, lifecycle emissions, or charging source impact",
+        "Missing context: 'zero emissions' only true if electricity is from renewable sources",
+        "No information about vehicle production emissions or end-of-life recycling"
+      ]
+    },
+    "Social Responsibility": {
+      "score": 65,
+      "findings": [
+        "Visual representation not shown, limiting diversity assessment",
+        "SUV marketing often targets affluent demographics, may exclude lower-income buyers",
+        "Performance emphasis ('0-60 in 4.2s') prioritizes luxury over accessibility",
+        "No mention of affordability or accessibility initiatives",
+        "Electric vehicles can be more inclusive (lower maintenance) but messaging doesn't emphasize this"
+      ]
+    },
+    "Cultural Sensitivity": {
+      "score": 70,
+      "findings": [
+        "'The future is electric' assumes universal infrastructure access",
+        "SUV preference is culturally specific (North American market primarily)",
+        "Performance metrics appeal to specific cultural values (speed, power)",
+        "No acknowledgment of varying charging infrastructure by region",
+        "Language is aspirational but may not resonate in all markets"
+      ]
+    },
+    "Ethical Communication": {
+      "score": 65,
+      "findings": [
+        "Specific, verifiable claims provided (300 mile range, 0-60 time)",
+        "Hashtag #ElectricFuture suggests environmental benefit without substantiation",
+        "Missing critical context about lifecycle emissions and charging source",
+        "'Zero emissions' could be misleading without clarification about electricity source",
+        "No greenwashing per se, but selective disclosure - emphasizes benefits, omits complexities",
+        "Performance emphasis may distract from practical sustainability considerations"
+      ]
+    }
+  },
+  "summary": {
+    "strengths": [
+      "Promotes electric vehicle adoption, which can reduce emissions versus gas vehicles",
+      "Provides specific, measurable performance claims (range, acceleration)",
+      "Avoids explicitly false environmental claims",
+      "Modern, forward-looking messaging positions sustainable choice as desirable",
+      "Addresses practical concern (range anxiety) with concrete data"
+    ],
+    "concerns": [
+      "Promotes SUV format - larger vehicles have higher environmental impact even when electric",
+      "Missing lifecycle context (battery production, electricity source, end-of-life)",
+      "'Zero emissions' claim is incomplete without charging source context",
+      "Performance emphasis (0-60 time) prioritizes luxury over sustainability",
+      "No mention of affordability, accessibility, or broader transportation solutions",
+      "Could be more transparent about environmental trade-offs and complexities"
+    ],
+    "recommendations": [
+      "Provide full lifecycle environmental impact comparison (vs gas SUV, vs smaller EVs)",
+      "Address battery sourcing ethics and recycling programs",
+      "Clarify that environmental benefit depends on electricity source",
+      "Consider promoting smaller EV models alongside SUV",
+      "Emphasize practical sustainability benefits (lower operating costs, less maintenance)",
+      "Add transparency about manufacturing emissions and offset initiatives",
+      "Consider accessibility messaging - EVs as practical choice, not just luxury",
+      "Complement individual vehicle marketing with support for public transit and active transportation"
+    ]
+  }
+}

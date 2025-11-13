@@ -1,0 +1,70 @@
+{
+  "brand": "EcoThreads",
+  "ad_type": "Sustainable Fashion Campaign",
+  "analysis_date": "2025-01-10",
+  "overall_score": 91,
+  "ad_language": "en",
+  "dimensions": {
+    "Climate Responsibility": {
+      "score": 95,
+      "findings": [
+        "Strong emphasis on lifetime repair guarantee - addresses fashion waste directly with concrete action",
+        "Specific, verifiable claims: '14,000 items repaired since 2019' provides transparent evidence",
+        "GOTS certification mentioned - third-party verification of organic cotton claims",
+        "Fair Trade certification provides supply chain transparency",
+        "Promotes circular economy with free community repair café - actionable beyond just purchasing"
+      ]
+    },
+    "Social Responsibility": {
+      "score": 90,
+      "findings": [
+        "Inclusive messaging: 'Buy less, wear longer' promotes anti-consumerism over body-focused consumption",
+        "Community-centered approach shown in repair café imagery",
+        "Fair Trade certification indicates worker welfare consideration",
+        "Transparent supply chain messaging demonstrates accountability",
+        "No body-focused imagery or exclusionary messaging"
+      ]
+    },
+    "Cultural Sensitivity": {
+      "score": 88,
+      "findings": [
+        "Authentic documentary-style imagery suggests real community participation",
+        "Natural lighting and genuine atmosphere avoids staged stereotyping",
+        "Repair café concept respects traditional mending practices",
+        "Inclusive of different ages and backgrounds in visual representation",
+        "Hashtags (#WearItOut, #SlowFashion) align with authentic sustainability movement"
+      ]
+    },
+    "Ethical Communication": {
+      "score": 92,
+      "findings": [
+        "Transparent about specific numbers and timeframes ('14,000 items since 2019')",
+        "Clear value proposition without manipulative language",
+        "Verifiable certifications (GOTS, Fair Trade) provided",
+        "Honest about anti-consumerism message - 'Buy less' is counter to typical advertising",
+        "Community benefit clearly stated (free repair for all clothing, not just brand's)"
+      ]
+    }
+  },
+  "summary": {
+    "strengths": [
+      "Exceptional transparency with specific, verifiable claims and third-party certifications",
+      "Authentic circular economy approach with concrete community action (repair café)",
+      "Anti-consumerist messaging that prioritizes longevity over sales",
+      "Strong social responsibility through Fair Trade and inclusive community approach",
+      "Avoids greenwashing through specific evidence and verifiable commitments"
+    ],
+    "concerns": [
+      "Could provide more detail on supply chain locations",
+      "Repair café accessibility (one location, specific hours) may be limited",
+      "No mention of end-of-life recycling for items beyond repair"
+    ],
+    "recommendations": [
+      "Consider expanding repair café hours or mobile/virtual options",
+      "Provide more specific supply chain transparency (factory locations, worker testimonials)",
+      "Develop take-back program for items that can't be repaired",
+      "Share environmental impact metrics (carbon footprint, water savings)",
+      "Continue authentic community engagement and document results"
+    ]
+  }
+}

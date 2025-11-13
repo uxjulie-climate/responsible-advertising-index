@@ -68,3 +68,18 @@ htmlcov/
 *.tmp
 temp/
 tmp/
+
+# Submissions (sensitive data)
+submissions/*.jpg
+submissions/*.jpeg
+submissions/*.png
+submissions/*.webp
+submissions/*.mp4
+submissions/*.mov
+submissions/*.avi
+submissions/*.webm
+submissions/*_metadata.json
+!submissions/README.md
+
+# Downloaded ads
+downloaded_ads/

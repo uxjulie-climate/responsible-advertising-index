@@ -1,0 +1,73 @@
+{
+  "brand": "SlimFit Pro",
+  "ad_type": "Weight Loss Supplement",
+  "analysis_date": "2025-01-10",
+  "overall_score": 34,
+  "ad_language": "en",
+  "dimensions": {
+    "Climate Responsibility": {
+      "score": 60,
+      "findings": [
+        "No environmental claims made (neutral stance)",
+        "No information about packaging sustainability",
+        "Promotional 'Buy 2 Get 1 FREE' encourages overconsumption",
+        "No mention of ingredient sourcing or environmental impact"
+      ]
+    },
+    "Social Responsibility": {
+      "score": 15,
+      "findings": [
+        "Before/after imagery perpetuates body shaming and unrealistic standards",
+        "Messaging directly links self-worth to weight: 'uncomfortable in your own skin', 'feel beautiful'",
+        "Testimonials focus entirely on weight loss, not health outcomes",
+        "Promotes external validation: 'turn heads everywhere you go'",
+        "No diverse body types shown - reinforces narrow beauty standards",
+        "Exploits insecurities rather than promotes wellness"
+      ]
+    },
+    "Cultural Sensitivity": {
+      "score": 40,
+      "findings": [
+        "Western beauty standards presented as universal ('dream body')",
+        "No acknowledgment of diverse cultural perspectives on body image",
+        "Before/after format is culturally stigmatizing in many contexts",
+        "Language assumes universal desire for thinness"
+      ]
+    },
+    "Ethical Communication": {
+      "score": 22,
+      "findings": [
+        "Vague efficacy claims: 'Drop pounds fast' without specific evidence",
+        "Limited-time pressure tactics: 'Buy 2 Get 1 FREE' creates urgency",
+        "Fine print disclaimer undermines main claims: 'Results may vary. Not a substitute for diet and exercise'",
+        "Testimonials lack verification or context (timeframe, other factors)",
+        "Emotional manipulation: links weight to happiness and self-worth",
+        "No scientific evidence provided for 'revolutionary formula' claims"
+      ]
+    }
+  },
+  "summary": {
+    "strengths": [
+      "Includes disclaimer about results and need for diet/exercise (though buried)",
+      "Does not make specific health claims that could be more problematic",
+      "Testimonials, while unverified, are attributed to named individuals"
+    ],
+    "concerns": [
+      "Severe body shaming and exploitation of insecurities throughout messaging",
+      "Before/after imagery perpetuates harmful beauty standards",
+      "Vague, unverified efficacy claims ('revolutionary formula', 'drop pounds fast')",
+      "Manipulative emotional appeals linking weight to self-worth and desirability",
+      "Pressure tactics (limited time offer) combined with vulnerability exploitation",
+      "Disclaimer contradicts main messaging - suggests ineffectiveness without lifestyle changes"
+    ],
+    "recommendations": [
+      "Reframe messaging around health and wellness, not appearance and external validation",
+      "Remove before/after imagery; show diverse bodies in active, healthy contexts",
+      "Provide specific, verifiable evidence for product efficacy",
+      "Feature diverse testimonials focusing on health outcomes, not just weight",
+      "Eliminate pressure tactics and emotional manipulation",
+      "Make disclaimers prominent, not hidden in fine print",
+      "Consider whether product genuinely improves lives or exploits insecurities"
+    ]
+  }
+}

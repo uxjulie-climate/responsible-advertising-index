@@ -83,3 +83,35 @@ submissions/*_metadata.json
 
 # Downloaded ads
 downloaded_ads/
+
+# Analysis data (large video files)
+analysis_storage/
+archive/
+
+# Overnight logs
+overnight_run_*.log
+overnight_console_*.log
+
+# Export files
+all_results_*.csv
+
+# Old analysis results (keep only latest in analysis_storage)
+*_analysis_results_*.csv
+*_analysis_results_*.json
+*_analysis_failed_*.json
+analysis_results_merged_*.csv
+cannes_analysis_results_*.csv
+hungarian_analysis_results_*.csv
+
+# Downloaded ad folders (too large)
+cannes_ads/
+hungarian_ads/
+
+# Logs and temp files
+nohup.out
+batch_download_log.txt
+
+# JSON mapping files
+*_catalog_mapping*.json
+*_downloaded.json
+*_failed.json

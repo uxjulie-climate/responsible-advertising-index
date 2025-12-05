@@ -142,17 +142,29 @@ class VideoAnalyzer:
     def _create_prompt(self, ad_copy: str, detected_language: str) -> str:
         """Create analysis prompt for video"""
 
-        # Import framework from app.py
+        # Import framework - try from calling module first, then app.py
+        FRAMEWORK = None
         try:
-            from app import FRAMEWORK
+            import sys
+            # Check if batch_analyze_hungarian module has FRAMEWORK
+            if 'batch_analyze_hungarian' in sys.modules:
+                batch_module = sys.modules['batch_analyze_hungarian']
+                if hasattr(batch_module, 'FRAMEWORK'):
+                    FRAMEWORK = batch_module.FRAMEWORK
         except:
-            # Fallback if app.py not available
-            FRAMEWORK = {
-                "Climate Responsibility": {"hu_name": "Klímafelelősség"},
-                "Social Responsibility": {"hu_name": "Társadalmi Felelősség"},
-                "Cultural Sensitivity": {"hu_name": "Kulturális Érzékenység"},
-                "Ethical Communication": {"hu_name": "Etikus Kommunikáció"}
-            }
+            pass
+
+        if FRAMEWORK is None:
+            try:
+                from app import FRAMEWORK
+            except:
+                # Fallback if neither available
+                FRAMEWORK = {
+                    "Climate Responsibility": {"hu_name": "Klímafelelősség"},
+                    "Social Responsibility": {"hu_name": "Társadalmi Felelősség"},
+                    "Cultural Sensitivity": {"hu_name": "Kulturális Érzékenység"},
+                    "Ethical Communication": {"hu_name": "Etikus Kommunikáció"}
+                }
 
         bilingual = detected_language == 'hu'
 
@@ -199,23 +211,19 @@ Return JSON in this EXACT format:
     "dimensions": {{
         "Climate Responsibility": {{
             "score": <0-100>,
-            "findings": ["finding 1 with specific video evidence", "finding 2", "finding 3"],
-            {"findings_hu": [\"magyar megállapítás 1\", \"...\"]," if bilingual else ""}
+            "findings": ["finding 1 with specific video evidence", "finding 2", "finding 3"]{', "findings_hu": ["magyar megállapítás 1", "..."]' if bilingual else ""}
         }},
         "Social Responsibility": {{
             "score": <0-100>,
-            "findings": ["finding 1", "finding 2", "finding 3"],
-            {"findings_hu": [\"magyar megállapítás 1\", \"...\"]," if bilingual else ""}
+            "findings": ["finding 1", "finding 2", "finding 3"]{', "findings_hu": ["magyar megállapítás 1", "..."]' if bilingual else ""}
         }},
         "Cultural Sensitivity": {{
             "score": <0-100>,
-            "findings": ["finding 1", "finding 2", "finding 3"],
-            {"findings_hu": [\"magyar megállapítás 1\", \"...\"]," if bilingual else ""}
+            "findings": ["finding 1", "finding 2", "finding 3"]{', "findings_hu": ["magyar megállapítás 1", "..."]' if bilingual else ""}
         }},
         "Ethical Communication": {{
             "score": <0-100>,
-            "findings": ["finding 1", "finding 2", "finding 3"],
-            {"findings_hu": [\"magyar megállapítás 1\", \"...\"]," if bilingual else ""}
+            "findings": ["finding 1", "finding 2", "finding 3"]{', "findings_hu": ["magyar megállapítás 1", "..."]' if bilingual else ""}
         }}
     }},
     "scenes": [
@@ -232,12 +240,9 @@ Return JSON in this EXACT format:
         }}
     ],
     "summary": {{
-        "strengths": ["strength 1 with video timestamp reference", "strength 2", "strength 3"],
-        {"strengths_hu": [\"erősség 1\", \"...\"]," if bilingual else ""}
-        "concerns": ["concern 1 with timestamp", "concern 2", "concern 3"],
-        {"concerns_hu": [\"aggály 1\", \"...\"]," if bilingual else ""}
-        "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"],
-        {"recommendations_hu": [\"ajánlás 1\", \"...\"]" if bilingual else ""}
+        "strengths": ["strength 1 with video timestamp reference", "strength 2", "strength 3"]{', "strengths_hu": ["erősség 1", "..."]' if bilingual else ""},
+        "concerns": ["concern 1 with timestamp", "concern 2", "concern 3"]{', "concerns_hu": ["aggály 1", "..."]' if bilingual else ""},
+        "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"]{', "recommendations_hu": ["ajánlás 1", "..."]' if bilingual else ""}
     }},
     "temporal_analysis": {{
         "messaging_evolution": "Describe how the message changes from beginning to end",
@@ -277,4 +282,38 @@ Be specific and reference ACTUAL elements from the video with timestamps."""
         try:
             return json.loads(json_str)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse JSON response: {e}\n\nResponse:\n{json_str[:500]}")
+            # Try to salvage partial JSON by finding the last complete object
+            print(f"Warning: JSON parse error: {e}")
+            print(f"Full response length: {len(response_text)}")
+
+            # Try to fix common JSON issues
+            try:
+                # Remove trailing commas and fix common issues
+                fixed_json = json_str.rstrip().rstrip(',')
+                # Try to close any unclosed braces
+                if fixed_json.count('{') > fixed_json.count('}'):
+                    fixed_json += '}' * (fixed_json.count('{') - fixed_json.count('}'))
+                return json.loads(fixed_json)
+            except:
+                pass
+
+            # If it's an unterminated string error, the response was likely truncated
+            # Return a minimal valid structure so batch analysis can continue
+            print("⚠️ Returning minimal valid structure to continue batch processing")
+            return {
+                'overall_score': 0,
+                'detected_language': 'unknown',
+                'duration_analyzed': '0',
+                'transcript': '[Error: Response truncated]',
+                'summary': {
+                    'main_message': 'Analysis failed due to malformed response',
+                    'responsible_advertising_assessment': 'Unable to analyze',
+                    'recommendations': ['Re-analyze this ad individually']
+                },
+                'dimensions': {
+                    'Climate Responsibility': {'score': 0, 'findings': ['Analysis error']},
+                    'Social Responsibility': {'score': 0, 'findings': ['Analysis error']},
+                    'Cultural Sensitivity': {'score': 0, 'findings': ['Analysis error']},
+                    'Ethical Communication': {'score': 0, 'findings': ['Analysis error']}
+                }
+            }

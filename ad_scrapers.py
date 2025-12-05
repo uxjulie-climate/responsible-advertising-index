@@ -134,21 +134,26 @@ class YouTubeScraper(AdScraper):
                 return False
 
             # Download video (max 720p, mp4 format)
+            # Add custom user agent to avoid 403 errors
+            user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+
             if yt_dlp_cmd.startswith('python3'):
                 cmd = [
                     'python3', '-m', 'yt_dlp',
                     url,
-                    '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
+                    '-f', 'best[height<=720]',
                     '-o', output_path,
-                    '--no-playlist'
+                    '--no-playlist',
+                    '--user-agent', user_agent
                 ]
             else:
                 cmd = [
                     yt_dlp_cmd,
                     url,
-                    '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best',
+                    '-f', 'best[height<=720]',
                     '-o', output_path,
-                    '--no-playlist'
+                    '--no-playlist',
+                    '--user-agent', user_agent
                 ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -162,6 +167,29 @@ class YouTubeScraper(AdScraper):
         except Exception as e:
             print(f"❌ Error: {e}")
             return False
+
+
+class VimeoScraper(AdScraper):
+    """
+    Download videos from Vimeo using yt-dlp.
+
+    Vimeo videos can be downloaded using yt-dlp just like YouTube.
+    """
+
+    @staticmethod
+    def download_video(url: str, output_path: str) -> bool:
+        """
+        Download Vimeo video using yt-dlp.
+
+        Args:
+            url: Vimeo video URL
+            output_path: Where to save the video
+
+        Returns:
+            True if successful
+        """
+        # Use the same method as YouTube since yt-dlp supports both
+        return YouTubeScraper.download_video(url, output_path)
 
 
 class GoogleAdsScraper(AdScraper):
@@ -226,7 +254,7 @@ def detect_platform(url: str) -> str:
     Detect which platform the URL is from.
 
     Returns:
-        'linkedin', 'meta', 'youtube', 'google_ads', 'direct', or 'unknown'
+        'linkedin', 'meta', 'youtube', 'vimeo', 'google_ads', 'direct', or 'unknown'
     """
     url = url.lower()
 
@@ -236,6 +264,8 @@ def detect_platform(url: str) -> str:
         return 'meta'
     elif 'youtube.com' in url or 'youtu.be' in url:
         return 'youtube'
+    elif 'vimeo.com' in url:
+        return 'vimeo'
     elif 'adstransparency.google.com' in url:
         return 'google_ads'
     elif url.endswith(('.mp4', '.mov', '.avi', '.webm')):
@@ -267,6 +297,7 @@ def download_ad_video(url: str, output_path: Optional[str] = None) -> Optional[s
         'linkedin': LinkedInAdScraper,
         'meta': MetaAdLibraryScraper,
         'youtube': YouTubeScraper,
+        'vimeo': VimeoScraper,
         'google_ads': GoogleAdsScraper,
         'direct': DirectVideoScraper
     }
@@ -275,6 +306,7 @@ def download_ad_video(url: str, output_path: Optional[str] = None) -> Optional[s
         print(f"❌ Unknown platform: {url}")
         print("Supported platforms:")
         print("  - YouTube (automated)")
+        print("  - Vimeo (automated)")
         print("  - Direct video URLs (automated)")
         print("  - LinkedIn Ad Library (manual)")
         print("  - Meta Ad Library (manual)")

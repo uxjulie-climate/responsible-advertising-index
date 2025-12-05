@@ -613,7 +613,7 @@ def export_to_excel(analyses: List[Dict]) -> bytes:
     for analysis in analyses:
         result = analysis['result']
         row = {
-            'Brand': analysis['brand_name'],
+            'Brand': analysis.get('brand_name') or analysis.get('brand', 'Unknown'),
             'Analysis Date': analysis['timestamp'],
             'Overall Score': result['overall_score'],
             'Climate Responsibility': result['dimensions']['Climate Responsibility']['score'],
@@ -626,7 +626,7 @@ def export_to_excel(analyses: List[Dict]) -> bytes:
             'Key Strengths': ' | '.join(result['summary']['strengths']),
             'Key Concerns': ' | '.join(result['summary']['concerns']),
             'Recommendations': ' | '.join(result['summary']['recommendations']),
-            'Ad Copy (excerpt)': analysis['ad_copy'][:200] + '...' if len(analysis['ad_copy']) > 200 else analysis['ad_copy']
+            'Ad Copy (excerpt)': (analysis.get('ad_copy', '')[:200] + '...' if len(analysis.get('ad_copy', '')) > 200 else analysis.get('ad_copy', 'N/A'))
         }
         data.append(row)
     
@@ -1024,7 +1024,8 @@ def main():
             for idx, analysis in enumerate(reversed(st.session_state.analysis_history[-5:]), 1):
                 score = analysis['result']['overall_score']
                 emoji = "🟢" if score >= 80 else ("🟡" if score >= 60 else "🔴")
-                st.markdown(f"{emoji} {analysis['brand_name']} ({score})")
+                brand = analysis.get('brand_name') or analysis.get('brand', 'Unknown')
+                st.markdown(f"{emoji} {brand} ({score})")
         
         st.markdown("---")
         st.header("📖 About / Rólunk")
@@ -1450,6 +1451,7 @@ def main():
                         'brand': brand_name_video or "Unknown",
                         'type': 'video',
                         'duration': metadata['duration'] if metadata else 0,
+                        'video_filename': uploaded_video.name if uploaded_video else None,
                         'result': result
                     })
 
@@ -1473,7 +1475,7 @@ def main():
                     # Radar chart
                     st.subheader("📈 Dimension Scores")
                     dimension_scores = {
-                        dim: data.get('score', 0)
+                        dim: {'score': data.get('score', 0)} if isinstance(data, dict) else {'score': data}
                         for dim, data in result.get('dimensions', {}).items()
                     }
                     fig_radar = create_radar_chart(dimension_scores, brand_name_video or "Video Ad")
@@ -1530,7 +1532,7 @@ def main():
                     st.subheader("🔍 Detailed Findings")
 
                     # Determine which language to show first
-                    show_language = ui_language  # Use interface language setting
+                    show_language = result.get('detected_language', 'en')  # Use detected language from analysis
 
                     for dim_name, dim_data in result.get('dimensions', {}).items():
                         with st.expander(f"{dim_name}: {dim_data.get('score', 0)}/100"):
@@ -1596,7 +1598,7 @@ def main():
             
             # Create selection options
             ad_options = {
-                f"{analysis['brand_name']} ({analysis['result']['overall_score']})": idx 
+                f"{analysis.get('brand_name') or analysis.get('brand', 'Unknown')} ({analysis['result']['overall_score']})": idx
                 for idx, analysis in enumerate(st.session_state.analysis_history)
             }
             
@@ -1728,7 +1730,7 @@ def main():
             for analysis in st.session_state.analysis_history[-10:]:  # Show last 10
                 result = analysis['result']
                 preview_data.append({
-                    'Brand': analysis['brand_name'],
+                    'Brand': analysis.get('brand_name') or analysis.get('brand', 'Unknown'),
                     'Date': analysis['timestamp'],
                     'Score': result['overall_score'],
                     'Climate': result['dimensions']['Climate Responsibility']['score'],
@@ -1757,8 +1759,15 @@ def main():
                 )
             
             with col2:
-                # Export all as JSON
-                all_json = json.dumps(st.session_state.analysis_history, indent=2)
+                # Export all as JSON (convert datetime objects to strings)
+                history_serializable = []
+                for item in st.session_state.analysis_history:
+                    item_copy = item.copy()
+                    if 'timestamp' in item_copy and isinstance(item_copy['timestamp'], datetime):
+                        item_copy['timestamp'] = item_copy['timestamp'].isoformat()
+                    history_serializable.append(item_copy)
+
+                all_json = json.dumps(history_serializable, indent=2)
                 st.download_button(
                     label=f"📄 Export All ({len(st.session_state.analysis_history)} ads) to JSON",
                     data=all_json,
